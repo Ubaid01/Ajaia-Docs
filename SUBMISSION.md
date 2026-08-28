@@ -6,15 +6,21 @@
 
 ---
 
-## 2. Seeded Test Accounts
-No password required. Select active user from top right dropdown:
-- **Alice Chen** (`u1` / `alice@ajaia.com`) - Owner of demo documents
+## 2. Deployment & Repository Note
+- **Public GitHub Repository**: Provided public GitHub repo containing full source code, documentation, test suite, and embedded screenshots instead of Google Drive link for direct reviewer inspection.
+- **Local Deployment Rationale**: Built with embedded SQLite (`better-sqlite3`) to ensure zero external API setup and instant reviewer setup. Serverless cloud deployment (Vercel) was intentionally bypassed because serverless functions wipe local SQLite file state between requests; running locally via `npm run dev` guarantees 100% deterministic, stateful persistence.
+
+---
+
+## 3. Seeded Accounts for Testing Sharing Flows
+No password required. Select active user from top right navbar dropdown:
+- **Alice Chen** (`u1` / `alice@ajaia.com`) - Owner of initial demo documents
 - **Bob Smith** (`u2` / `bob@ajaia.com`) - Has **Can Edit** access to shared documents
 - **Charlie Kim** (`u3` / `charlie@ajaia.com`) - Has **Can View** (Read-Only) access
 
 ---
 
-## 3. Quick Setup & Local Run Commands
+## 4. Local Setup & Execution
 ```bash
 # 1. Install dependencies
 npm install
@@ -27,31 +33,27 @@ npm run test
 
 # 4. Production build validation
 npm run build
+
+# 5. Run production build
+npm start
 ```
 
 ---
 
-## 4. Key Architectural & System Decisions
+## 5. What Is Working vs What Was Deprioritized
 
-### Framework & Database
-- **Next.js App Router**: Co-locates React UI components and Server API Routes in pure JavaScript (`.js` / `.jsx`), zero CORS configuration overhead.
-- **SQLite (`better-sqlite3`)**: Relational database stored in `ajaia.db`. Tracks `users`, `documents`, `document_shares`, and `document_versions` with zero external API key requirements.
+### What Is Working (End-to-End Features)
+- **Document Creation & Editing**: Inline title rename (dashboard cards & editor header), rich text (Bold, Italic, Underline, Strike, H1/H2, Bullet/Numbered Lists, Code Blocks, Hyperlinks, Images, Tables with +Row/+Col/-Row/-Col/Delete Table, Text Alignment), debounced auto-save, live word count.
+- **File Upload & Export**: Import `.txt`, `.md` (via `marked`), `.docx` (via `mammoth`). Export `.txt`, `.md`, `.pdf`.
+- **Version History & Snapshot Restoration**: SQLite `document_versions` snapshots + Version History modal to preview and restore revisions.
+- **Sharing & Access Control**: Owner grants `Can Edit` or `Can View` permissions to seeded users. Read-only toolbar guards and warning banner for viewers.
+- **Collaborator Presence & Multi-Tab Sync**: Header presence avatars filtered by document access rights + multi-tab polling sync.
+- **Automated Tests**: 4 Vitest unit tests in `__tests__/documents.test.js` verifying access control rules.
 
-### Rich Text Editor & Extensions
-- **Tiptap Editor (`@tiptap/react` + StarterKit)**: Configured with custom formatting extensions for Bold, Italic, Underline, Strikethrough, Headings (H1/H2), Bullet/Numbered Lists, Code Blocks, Hyperlinks, Images (HTTP URLs & Base64), Tables (with contextual +Row, +Col, -Row, -Col, Delete Table controls), and Text Alignment (Left, Center, Right).
+### What Was Intentionally Deprioritized (Scope Cuts)
+- Real-time WebSocket CRDT / Operational Transform engine (used rapid polling & window focus sync to guarantee reliable state under time limit).
+- Cloud Auth provider setup (used instant zero-password user switcher for reviewer convenience).
 
-### File Import & Export
-- **Multi-Format Import**: Client-side parsing for plain text (`.txt`), Markdown (`.md` via `marked`), and Microsoft Word (`.docx` via `mammoth`) directly into editable document canvas or draft appends.
-- **Multi-Format Export**: Direct file download as plain text (`.txt`), Markdown (`.md`), or PDF (`.pdf` via print layout styling).
-
-### Access Control & Version History
-- **Role-Based Sharing**: Granular **Can Edit** and **Can View** access enforcement in `lib/documents.js`. Viewers get enforced read-only toolbar guards and warning banner.
-- **Revision Snapshots**: Automatic snapshot recording on auto-saves. Dedicated Version History modal allows previewing and restoring prior document revisions with one click.
-- **Collaborator Presence & Multi-Tab Sync**: Header presence avatars reflect active document access rights. Multi-tab focus listeners and fast polling maintain real-time document sync.
-
----
-
-## 5. Verification & Testing Summary
-
-- **Automated Tests**: 4 Vitest unit tests in `__tests__/documents.test.js` verifying owner permissions, share access rules, and viewer restrictions (`npm run test` 100% passing).
-- **Production Build**: Verified clean Next.js build compilation (`npm run build` exit code 0).
+### What I Would Build Next (Next 2-4 Hours)
+1. **Inline Text Comment Threads**: Highlight text ranges to leave comments and resolve discussions.
+2. **Collaborative Cursor Position Avatars**: Render colored cursor indicators showing active typing position.
