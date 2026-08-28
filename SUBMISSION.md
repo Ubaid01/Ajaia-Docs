@@ -1,62 +1,57 @@
 # Ajaia Docs - Submission Package
 
 ## 1. Submission Links
-- **Google Drive Folder**: `[Include Google Drive Link Here]`
-- **Walkthrough Video**: `[Include Loom / YouTube Video Link Here]`
+- **GitHub Repository**: https://github.com/Ubaid01/Ajaia-Docs
+- **Walkthrough Video**: https://youtu.be/5LyfaGrXrGs
 
 ---
 
-## 2. Screenshots & Product Previews
-![Dashboard](./public/screenshots/dashboard.png)
-![Document Editor](./public/screenshots/editor.png)
-![Share Modal](./public/screenshots/share_modal.png)
+## 2. Seeded Test Accounts
+No password required. Select active user from top right dropdown:
+- **Alice Chen** (`u1` / `alice@ajaia.com`) - Owner of demo documents
+- **Bob Smith** (`u2` / `bob@ajaia.com`) - Has **Can Edit** access to shared documents
+- **Charlie Kim** (`u3` / `charlie@ajaia.com`) - Has **Can View** (Read-Only) access
 
 ---
 
-## 3. Seeded Accounts for Testing Sharing Flows
-No password required. Select active user from the top right dropdown in the app navbar:
-- **Alice Chen** (`u1` / `alice@ajaia.com`) - Owner of initial demo document
-- **Bob Smith** (`u2` / `bob@ajaia.com`) - Has **Can Edit** access to Alice's demo document
-- **Charlie Kim** (`u3` / `charlie@ajaia.com`) - Has **Can View** (Read Only) access to Alice's demo document
-
----
-
-## 4. Local Setup & Run Instructions
+## 3. Quick Setup & Local Run Commands
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Run local dev server
+# 2. Run local dev server (http://localhost:3000)
 npm run dev
-# Open http://localhost:3000
 
-# 3. Run automated tests
+# 3. Run automated test suite
 npm run test
 
-# 4. Build for production
+# 4. Production build validation
 npm run build
 ```
 
 ---
 
-## 5. Deliverables Checklist & Included Files
+## 4. Key Architectural & System Decisions
 
-- [x] **Source Code**: Clean Next.js App Router codebase in pure JavaScript (`.js` / `.jsx`).
-- [x] **`README.md`**: Complete setup, architecture notes, screenshots, and feature matrix.
-- [x] **`ARCHITECTURE.md`**: System design, SQLite schema, and security access control tradeoff notes.
-- [x] **`AI_WORKFLOW.md`**: Detailed AI acceleration and verification workflow notes.
-- [x] **`SUBMISSION.md`**: Deliverable manifest.
-- [x] **`Plan.md` & `Progress.md`**: Task tracking & verification logs.
+### Framework & Database
+- **Next.js App Router**: Co-locates React UI components and Server API Routes in pure JavaScript (`.js` / `.jsx`), zero CORS configuration overhead.
+- **SQLite (`better-sqlite3`)**: Relational database stored in `ajaia.db`. Tracks `users`, `documents`, `document_shares`, and `document_versions` with zero external API key requirements.
+
+### Rich Text Editor & Extensions
+- **Tiptap Editor (`@tiptap/react` + StarterKit)**: Configured with custom formatting extensions for Bold, Italic, Underline, Strikethrough, Headings (H1/H2), Bullet/Numbered Lists, Code Blocks, Hyperlinks, Images (HTTP URLs & Base64), Tables (with contextual +Row, +Col, -Row, -Col, Delete Table controls), and Text Alignment (Left, Center, Right).
+
+### File Import & Export
+- **Multi-Format Import**: Client-side parsing for plain text (`.txt`), Markdown (`.md` via `marked`), and Microsoft Word (`.docx` via `mammoth`) directly into editable document canvas or draft appends.
+- **Multi-Format Export**: Direct file download as plain text (`.txt`), Markdown (`.md`), or PDF (`.pdf` via print layout styling).
+
+### Access Control & Version History
+- **Role-Based Sharing**: Granular **Can Edit** and **Can View** access enforcement in `lib/documents.js`. Viewers get enforced read-only toolbar guards and warning banner.
+- **Revision Snapshots**: Automatic snapshot recording on auto-saves. Dedicated Version History modal allows previewing and restoring prior document revisions with one click.
+- **Collaborator Presence & Multi-Tab Sync**: Header presence avatars reflect active document access rights. Multi-tab focus listeners and fast polling maintain real-time document sync.
 
 ---
 
-## 6. What Is Working (End-to-End Features)
+## 5. Verification & Testing Summary
 
-- **Document Creation & Editing**: Create new documents, inline title renaming from dashboard cards or editor header, rich text formatting (Bold, Italic, Underline, Strikethrough, H1/H2, Bullet/Numbered Lists, Blockquotes, Code Blocks, Hyperlinks, Images, Tables with +Row/+Col/-Row/-Col/Delete Table, Text Alignment), debounced auto-save to SQLite, live word counter.
-- **File Upload & Export**: Import `.txt`, `.md`, or `.docx` files to generate a new editable document or append into an existing draft. Export active document to `.txt`, `.md`, or `.pdf`.
-- **Version History & Snapshot Restoration**: Automatic revision snapshots in SQLite + Version History modal to preview and restore past document versions.
-- **Sharing & Permissions**: Owner can grant/revoke `Can Edit` or `Can View` permissions to seeded users. Workspace separates "My Documents" from "Shared with Me". Viewers get enforced read-only UI guards.
-- **Collaborator Presence**: Active collaborator avatars in editor header showing online presence and permission badges.
-- **Multi-Tab Sync**: Cross-tab visibility focus listeners & 2.0s polling auto-sync documents across windows.
-- **Persistence**: Relational SQLite storage in `ajaia.db` initialized with schema & auto-seeded sample data. State preserved across reloads via `localStorage` & URL query parameters (`?doc=id&user=userId`).
-- **Automated Tests**: 4 Vitest unit tests verifying access control rules.
+- **Automated Tests**: 4 Vitest unit tests in `__tests__/documents.test.js` verifying owner permissions, share access rules, and viewer restrictions (`npm run test` 100% passing).
+- **Production Build**: Verified clean Next.js build compilation (`npm run build` exit code 0).
